@@ -1,12 +1,12 @@
+using Cap.Data;
 using Cap.middleware;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Logging.AddConsole();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -41,17 +41,28 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.Services.AddDbContext<QuakeContext>(opts =>
+{
+    string? config = builder.Configuration.GetConnectionString("prod");
+    opts.UseNpgsql(config, conf => conf.CommandTimeout(60));
+    if (builder.Environment.IsDevelopment())
+    {
+        opts.EnableSensitiveDataLogging()
+            .EnableDetailedErrors();
+    }
+});
+
 WebApplication app = builder.Build();
 app.UseMiddleware<ApiKeyMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Your API V1");
-        
     });
 }
 
