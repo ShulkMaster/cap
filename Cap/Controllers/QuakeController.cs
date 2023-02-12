@@ -27,7 +27,13 @@ public class QuakeController : ControllerBase
     public async Task<List<Quake>> Index([FromQuery] int limit)
     {
         int fixedLimit = Math.Min(100, Math.Abs(limit));
+        var writer = new WKTWriter();
         var res =  await _db.Quakes.Take(fixedLimit).ToListAsync();
+        foreach (Quake quake in res)
+        {
+            string text = writer.Write(quake.Geom);
+            quake.IntensityDescription = text;
+        }
         return res;
     }
 
@@ -54,7 +60,6 @@ public class QuakeController : ControllerBase
                 .Replace("PM", "p. m.")
                 .ToLower();
             TimeZoneInfo elSalvadorTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central America Standard Time");
-            WKBWriter wkbWriter = new WKBWriter();
             try
             {
                 string fDate = $"{fixedDay} {timeFix}".Trim();
@@ -74,13 +79,16 @@ public class QuakeController : ControllerBase
                 quake.Intensity = CountIsWithAverage(parser[7]);
                 bytes = Encoding.Latin1.GetBytes(parser[7]);
                 quake.IntensityDescription = Encoding.UTF8.GetString(bytes);
-                var point = new Point(quake.Longitude, quake.Latitude);
-                quake.Geom = wkbWriter.Write(point);
+                var point = new Point(quake.Longitude, quake.Latitude)
+                {
+                    SRID = 4326
+                };
+                quake.Geom = point;
                 quakes.Add(quake);
             }
             catch (Exception e)
             {
-                _logger.LogError(e.Message);
+                _logger.LogError("{message}", e.Message);
             }
         }
 

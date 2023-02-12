@@ -2,10 +2,15 @@ using Cap.Data;
 using Cap.middleware;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using NetTopologySuite.IO.Converters;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(opt =>
+    {
+        opt.JsonSerializerOptions.Converters.Add(new GeoJsonConverterFactory());
+    });
 builder.Logging.AddConsole();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -44,7 +49,11 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddDbContext<QuakeContext>(opts =>
 {
     string? config = builder.Configuration.GetConnectionString("prod");
-    opts.UseNpgsql(config, conf => conf.CommandTimeout(60));
+    opts.UseNpgsql(config, conf =>
+    {
+        conf.CommandTimeout(60)
+            .UseNetTopologySuite();
+    });
     if (builder.Environment.IsDevelopment())
     {
         opts.EnableSensitiveDataLogging()

@@ -1,4 +1,6 @@
-﻿namespace Cap.Models;
+﻿using NetTopologySuite.Geometries;
+
+namespace Cap.Models;
 
 public class Quake
 {
@@ -11,5 +13,5 @@ public class Quake
     public double Magnitude { get; set; }
     public float Intensity { get; set; }
     public string IntensityDescription { get; set; } = string.Empty;
-    public byte[] Geom { get; set; } = Array.Empty<byte>();
+    public Point Geom { get; set; } = new Point(0,0);
 }
