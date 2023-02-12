@@ -9,7 +9,7 @@ public class Quake
     public string Location { get; set; } = string.Empty;
     public double Depth { get; set; }
     public double Magnitude { get; set; }
-    public int Intensity { get; set; }
+    public float Intensity { get; set; }
     public string IntensityDescription { get; set; } = string.Empty;
     public byte[] Geom { get; set; } = Array.Empty<byte>();
 }
