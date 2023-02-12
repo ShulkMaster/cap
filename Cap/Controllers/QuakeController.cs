@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Cap.Models;
 using GenericParsing;
 using Microsoft.EntityFrameworkCore;
+using NetTopologySuite.Geometries;
+using NetTopologySuite.IO;
 
 namespace Cap.Controllers;
 
@@ -52,6 +54,7 @@ public class QuakeController : ControllerBase
                 .Replace("PM", "p. m.")
                 .ToLower();
             TimeZoneInfo elSalvadorTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Central America Standard Time");
+            WKBWriter wkbWriter = new WKBWriter();
             try
             {
                 string fDate = $"{fixedDay} {timeFix}".Trim();
@@ -71,6 +74,8 @@ public class QuakeController : ControllerBase
                 quake.Intensity = CountIsWithAverage(parser[7]);
                 bytes = Encoding.Latin1.GetBytes(parser[7]);
                 quake.IntensityDescription = Encoding.UTF8.GetString(bytes);
+                var point = new Point(quake.Longitude, quake.Latitude);
+                quake.Geom = wkbWriter.Write(point);
                 quakes.Add(quake);
             }
             catch (Exception e)
