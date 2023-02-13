@@ -1,17 +1,19 @@
 ﻿using System.Globalization;
 using System.Text;
+using Cap.Contract.Request;
 using Cap.Data;
+using Cap.Filter;
 using Microsoft.AspNetCore.Mvc;
 using Cap.Models;
 using GenericParsing;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
-using NetTopologySuite.IO;
 
 namespace Cap.Controllers;
 
 [ApiController]
 [Route("[controller]")]
+[ServiceFilter(typeof(ApiKeyAuthFilter))]
 public class QuakeController : ControllerBase
 {
     private readonly ILogger _logger;
@@ -24,16 +26,11 @@ public class QuakeController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<List<Quake>> Index([FromQuery] int limit)
+    public async Task<List<Quake>> Index([FromQuery] QuakeFilter filter)
     {
-        int fixedLimit = Math.Min(100, Math.Abs(limit));
-        var writer = new WKTWriter();
+        _logger.LogInformation(filter.Date.Min.ToString());
+        int fixedLimit = 15;
         var res =  await _db.Quakes.Take(fixedLimit).ToListAsync();
-        foreach (Quake quake in res)
-        {
-            string text = writer.Write(quake.Geom);
-            quake.IntensityDescription = text;
-        }
         return res;
     }
 

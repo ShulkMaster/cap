@@ -1,5 +1,6 @@
+using System.Text.Json.Serialization;
 using Cap.Data;
-using Cap.middleware;
+using Cap.Filter;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using NetTopologySuite.IO.Converters;
@@ -10,9 +11,21 @@ builder.Services.AddControllers()
     .AddJsonOptions(opt =>
     {
         opt.JsonSerializerOptions.Converters.Add(new GeoJsonConverterFactory());
+        opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
+
 builder.Logging.AddConsole();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddScoped<ApiKeyAuthFilter>();
+
+builder.Services.AddCors(cors =>
+{
+    cors.AddDefaultPolicy(opts => opts.AllowAnyOrigin()
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+    );
+});
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
@@ -25,7 +38,7 @@ builder.Services.AddSwaggerGen(c =>
     c.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
     {
         Description = "Enter the API key:",
-        Name = ApiKeyMiddleware.ApiKeyHeader,
+        Name = ApiKeyAuthFilter.ApiKeyHeader,
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
     });
@@ -62,13 +75,13 @@ builder.Services.AddDbContext<QuakeContext>(opts =>
 });
 
 WebApplication app = builder.Build();
-app.UseMiddleware<ApiKeyMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
+    app.UseCors();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Your API V1");
