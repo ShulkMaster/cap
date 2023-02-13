@@ -5,6 +5,7 @@ using Cap.Data;
 using Cap.Filter;
 using Microsoft.AspNetCore.Mvc;
 using Cap.Models;
+using Cap.Utils;
 using GenericParsing;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
@@ -28,9 +29,15 @@ public class QuakeController : ControllerBase
     [HttpGet]
     public async Task<List<Quake>> Index([FromQuery] QuakeFilter filter)
     {
-        _logger.LogInformation(filter.Date.Min.ToString());
-        int fixedLimit = 15;
-        var res =  await _db.Quakes.Take(fixedLimit).ToListAsync();
+        IQueryable<Quake> quakes = _db.Quakes;
+        var filterer = new QuakeFilterer(filter);
+        quakes = filterer.Apply(quakes);
+
+        var res = await quakes
+            .OrderBy(q => q.Magnitude)
+            .Take(filter.Size)
+            .Skip(filter.Size * (filter.Page - 1))
+            .ToListAsync();
         return res;
     }
 

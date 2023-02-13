@@ -2,14 +2,18 @@
 
 public class DoubleRange
 {
-    public const double Tolerance = 0.0005d;
     public double Min { get; set; }
     public double Max { get; set; }
+
+    public void Deconstruct(out double min, out double max)
+    {
+        min = Min;
+        max = Max;
+    }
 }
 
 public class SingleRange
 {
-    public const double Tolerance = 0.0005d;
     public float Min { get; set; }
     public float Max { get; set; }
 }
@@ -18,4 +22,10 @@ public class DateRange
 {
     public DateTime Min { get; set; }
     public DateTime Max { get; set; }
+
+    public void Deconstruct(out DateTime min, out DateTime max)
+    {
+        min = Min;
+        max = Max;
+    }
 }
