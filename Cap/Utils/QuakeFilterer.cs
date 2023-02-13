@@ -29,6 +29,12 @@ public class QuakeFilterer
             result = ApplyDoubleQuery(result, _filter.Magnitude, query);
         }
 
+        if (_filter.Depth is not null)
+        {
+            var query = RangeQueries.GetDepthQuery(_filter.Depth);
+            result = ApplyDoubleQuery(result, _filter.Depth, query);
+        }
+
         return result;
     }
 

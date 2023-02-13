@@ -22,4 +22,14 @@ public static class RangeQueries
             .AddOnBothRanges(quake => quake.Date <= dates.Max && quake.Date >= dates.Min);
         return query;
     }
+    
+    public static RangeQuery GetDepthQuery(DoubleRange depths)
+    {
+        (double min, double max) = depths;
+        RangeQuery query = new RangeQuery()
+            .AddOnMaxRange(quake => quake.Depth <= max)
+            .AddOnMinRange(quake => quake.Depth >= min)
+            .AddOnBothRanges(quake => quake.Depth <= max && quake.Depth >= min);
+        return query;
+    }
 }
