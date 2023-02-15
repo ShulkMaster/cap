@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
+using System.Text.Json;
 using Cap.Contract.Request;
 using Cap.Data;
 using Cap.Filter;
@@ -33,11 +34,14 @@ public class QuakeController : ControllerBase
         var filterer = new QuakeFilterer(filter);
         quakes = filterer.Apply(quakes);
 
-        var res = await quakes
-            .OrderBy(q => q.Magnitude)
-            .Take(filter.Size)
-            .Skip(filter.Size * (filter.Page - 1))
-            .ToListAsync();
+        quakes = filterer.Sort(quakes);
+        if (filter.Size != 0 && filter.Page != 0)
+        {
+            quakes = quakes.Take(filter.Size)
+                .Skip(filter.Size * (filter.Page - 1));
+        }
+
+        var res = await quakes.ToListAsync();
         return res;
     }
 

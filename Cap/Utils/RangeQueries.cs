@@ -32,4 +32,14 @@ public static class RangeQueries
             .AddOnBothRanges(quake => quake.Depth <= max && quake.Depth >= min);
         return query;
     }
+    
+    public static RangeQuery GetIntensityQuery(SingleRange depths)
+    {
+        (float min, float max) = depths;
+        RangeQuery query = new RangeQuery()
+            .AddOnMaxRange(quake => quake.Intensity <= max)
+            .AddOnMinRange(quake => quake.Intensity >= min)
+            .AddOnBothRanges(quake => quake.Intensity <= max && quake.Intensity >= min);
+        return query;
+    }
 }

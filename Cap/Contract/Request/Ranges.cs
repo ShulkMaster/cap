@@ -16,6 +16,12 @@ public class SingleRange
 {
     public float Min { get; set; }
     public float Max { get; set; }
+    
+    public void Deconstruct(out float min, out float max)
+    {
+        min = Min;
+        max = Max;
+    }
 }
 
 public class DateRange
