@@ -2,7 +2,7 @@
 
 public class QuakeFilter: Paginable
 {
-    public QuakeSort Sort { get; set; } = QuakeSort.Date;
+    public QuakeSort Sort { get; set; } = QuakeSort.Magnitude;
     public DoubleRange? Magnitude { get; set; }
     public DoubleRange? Depth { get; set; }
     public SingleRange? Intensity { get; set; }
