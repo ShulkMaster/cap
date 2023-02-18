@@ -47,6 +47,38 @@ public class QuakeController : ControllerBase
     [HttpPost("/update")]
     public async Task<int> Update()
     {
+        var quakes = FromFile();
+        _db.Quakes.AddRange(quakes);
+        return await _db.SaveChangesAsync();
+    }
+    
+    [HttpGet("/data")]
+    public FileResult Data()
+    {
+        var quakes = FromFile();
+        var mStream = new MemoryStream();
+        var sWriter = new StreamWriter(mStream, Encoding.UTF8);
+        sWriter.Write("Date time ISO,Latitude,Longitude,");
+        sWriter.Write("Location,Depth KM,Magnitude,");
+        sWriter.Write("Intensity,IntensityDescription");
+        sWriter.Write('\n');
+        foreach (Quake q in quakes)
+        {
+            string firstTriad = $"{q.Date:O},{q.Latitude},{q.Longitude},";
+            sWriter.Write(firstTriad);
+            string secondTriad = $"{q.Location.Replace(',', ' ')},{q.Depth},{q.Magnitude},";
+            sWriter.Write(secondTriad);
+            string thirdTriad = $"{q.Intensity},{q.IntensityDescription}";
+            sWriter.Write(thirdTriad);
+            sWriter.Write('\n');
+        }
+
+        mStream.Seek(0, 0);
+        return new FileStreamResult(mStream, "text/csv");
+    }
+
+    private List<Quake> FromFile()
+    {
         StreamReader sRead = System.IO.File.OpenText("data.csv");
         var parser = new GenericParser(sRead);
         var quakes = new List<Quake>();
@@ -99,8 +131,7 @@ public class QuakeController : ControllerBase
             }
         }
 
-        _db.Quakes.AddRange(quakes);
-        return await _db.SaveChangesAsync();
+        return quakes;
     }
 
     private static float CountIsWithAverage(string input)
